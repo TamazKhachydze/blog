@@ -13,7 +13,8 @@
 2. source ДиректорияВиртуальногоОкружения/bin/activate
 3. Перейти в директорию blog
 4. pip install -r requirements.txt
-5. python manage.py migrate
+5. python manage.py makemigrations   
+6. python manage.py migrate
 7. Запустить сервер - python manage.py runserver
 
 Не забудьте создать директорию media, куда будут сохраняться изображения для товара
