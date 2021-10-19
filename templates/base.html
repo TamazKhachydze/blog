@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" style="height: 100%;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Front page</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'blog/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/owl.carousel.min.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/owl.theme.default.min.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/style.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/responsive.css' %}">
+</head>
+
+<body style="height: 100%;">
+<div class="wrapper" style="min-height: 100%; position: relative;">
+    <br>
+
+    {% include '_inc/header.html' %}
+
+    {% block content %}
+
+    {% endblock content %}
+
+    {% include '_inc/footer.html' %}
+    <br>
+</div>
+
+<script src="{% static 'blog/js/jquery-3.1.1.min.js' %}"></script>
+
+<script>
+    $(document).scroll(function(){
+        localStorage['page'] = document.URL;
+        localStorage['scrollTop'] = $(document).scrollTop();
+    });
+</script>
+
+<script>
+    $(document).ready(function(){
+        $(".reply").on('click', function(){
+            var parentId = $(this).attr('data-id')
+            $("#form-"+parentId).fadeToggle();
+        })
+        $(".submit-reply").on('click', function(e){
+            e.preventDefault()
+            var parentId = $(this).attr('data-submit-reply')
+            var id = $(this).attr('data-id')
+            var text = $("#form-"+id).find('textarea[name="comment-text"]').val();
+
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            var csrftoken = getCookie('csrftoken');
+
+
+            data = {
+                user: "{{ request.user.username }}",
+                parentId: parentId,
+                text: text,
+                id: id,
+                postId: "{{ post.pk }}",
+                csrfmiddlewaretoken: csrftoken
+            }
+
+            $.ajax({
+                method: "POST",
+                data: data,
+                url: "{% url 'comment_child_create' %}",
+                success: function(data){
+                    window.location.replace(document.location.pathname)
+                }
+            })
+        })
+        if (localStorage['page'] == document.URL) {
+            $(document).scrollTop(localStorage['scrollTop']);
+        }
+    })
+</script>
+
+
+
+<script src="{% static 'blog/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'blog/js/owl.carousel.min.js' %}"></script>
+<script src="{% static 'blog/js/active.js' %}"></script>
+</body>
+
+</html>

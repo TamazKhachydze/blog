@@ -1,0 +1,33 @@
+<header class="header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="logo">
+                    <h2><a href="{% url 'post_list' %}">Blog</a></h2>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="menu">
+                    <ul>
+                        <li class="active"><a href="#">Home</a></li>
+                        {% if not request.user.is_authenticated %}
+                        <li><a href="{% url 'login' %}">Авторизация</a></li>
+                        <li><a href="{% url 'registration' %}">Регистрация</a></li>
+                        {% else %}
+                        <li><a href="{% url 'logout' %}">Выйти</a></li>
+                        {% endif %}
+                        <li>
+                            <form class="" style="display: flex;" method="get" action="{% url 'search' %}">
+                                <div class="newsletter">
+                                    <input class="mr-2 ml-2" type="search" placeholder="Поиск" name="search">
+                                    <input type="submit" value="Поиск">
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
