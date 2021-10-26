@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Count
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django import views
 from .models import Post, Tag, Category, Comment
 from .forms import LoginForm, RegistrationForm, CommentForm
@@ -11,6 +11,7 @@ from django.http import HttpResponseRedirect
 from .utils import get_path_for_filter_pagination, get_data_for_filter, create_comment_tree, get_data_comment
 import json
 from django.db.models import F
+from django.contrib import messages
 
 
 class CategoryTag:
@@ -80,9 +81,13 @@ class TagListView(CategoryTag, views.generic.ListView):
 class LoginView(views.View):
 
     def get(self, request, *args, **kwargs):
+        if request.session.get('previous_page'):
+            messages.info(request, 'Чтобы оставлять комментарий сначала нужно Авторизоваться/Зарегестрироватся')
+            del request.session['previous_page']
         form = LoginForm(request.POST or None)
+        messages.info(request, '')
         context = {
-            'form': form
+            'form': form,
         }
         return render(request, 'blog/login.html', context)
 
@@ -181,18 +186,22 @@ class FilterSortView(CategoryTag, views.generic.ListView):
 
 
 def create_comment(request):
-    comment_form = CommentForm(request.POST or None)
-    if comment_form.is_valid():
-        new_comment = comment_form.save(commit=False)
-        new_comment.user = request.user
-        new_comment.text = comment_form.cleaned_data['text']
-        new_comment.content_type = ContentType.objects.get(model='post')
-        new_comment.object_id = int(request.POST.get('post_id'))
-        new_comment.parent = None
-        new_comment.is_child = False
-        new_comment.save()
-    post_slug = Post.objects.get(id=request.POST.get('post_id')).slug
-    return HttpResponseRedirect(r'/detail/'+post_slug+'/')
+    if request.user.is_authenticated:
+        comment_form = CommentForm(request.POST or None)
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            new_comment.user = request.user
+            new_comment.text = comment_form.cleaned_data['text']
+            new_comment.content_type = ContentType.objects.get(model='post')
+            new_comment.object_id = int(request.POST.get('post_id'))
+            new_comment.parent = None
+            new_comment.is_child = False
+            new_comment.save()
+        post_slug = Post.objects.get(id=request.POST.get('post_id')).slug
+        return HttpResponseRedirect(r'/detail/'+post_slug+'/')
+    else:
+        request.session['previous_page'] = True
+        return redirect('/login/')
 
 
 @transaction.atomic
