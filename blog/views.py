@@ -12,16 +12,25 @@ from .utils import get_path_for_filter_pagination, get_data_for_filter, create_c
 import json
 from django.db.models import F
 from django.contrib import messages
+from django.core.cache import cache
 
 
 class CategoryTag:
     """Категории и теги фильмов"""
 
     def get_categories(self):
-        return Category.objects.annotate(cnt=Count('category_posts')).filter(cnt__gt=0)
+        get_categories = cache.get('get_categories')
+        if not get_categories:
+            get_categories = Category.objects.annotate(cnt=Count('category_posts')).filter(cnt__gt=0)
+            cache.set('get_categories', get_categories, 30)
+        return get_categories
 
     def get_tags(self):
-        return Tag.objects.annotate(cnt=Count('tags_posts')).filter(cnt__gt=0)
+        get_tags = cache.get('get_tags')
+        if not get_tags:
+            get_tags = Tag.objects.annotate(cnt=Count('tags_posts')).filter(cnt__gt=0)
+            cache.set('get_tags', get_tags, 30)
+        return get_tags
 
 
 class PostListView(CategoryTag, views.generic.ListView):
