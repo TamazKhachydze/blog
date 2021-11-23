@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+
 <div class="container">
     {% for m in messages %}
         <p>{{ m }}</p>
@@ -9,6 +10,7 @@
     <form action="{% url 'login' %}" method="POST">
         {% csrf_token %}
         {{ form|crispy }}
+        <input type="hidden" name="redirect_after_login" value="{{ redirect_to }}">
         <input type="submit" value="Войти" class="btn btn-primary">
     </form>
 </div>

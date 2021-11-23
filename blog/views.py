@@ -91,13 +91,14 @@ class TagListView(CategoryTag, views.generic.ListView):
 class LoginView(views.View):
 
     def get(self, request, *args, **kwargs):
+        redirect_to = self.request.META.get('HTTP_REFERER')
         if request.session.get('previous_page'):
             messages.info(request, 'Чтобы оставлять комментарий сначала нужно Авторизоваться/Зарегестрироватся')
             del request.session['previous_page']
         form = LoginForm(request.POST or None)
         messages.info(request, '')
         context = {
-            'form': form,
+            'form': form, 'redirect_to': redirect_to
         }
         return render(request, 'blog/login.html', context)
 
@@ -109,7 +110,7 @@ class LoginView(views.View):
             user = authenticate(username=username, password=password)
             if user:
                 login(request, user)
-                return HttpResponseRedirect('/')
+                return HttpResponseRedirect(request.POST.get('redirect_after_login') or '/')
         context = {
             'form': form
         }
