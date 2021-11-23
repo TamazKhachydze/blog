@@ -1,10 +1,10 @@
 from django.contrib import admin
-from django.utils.safestring import mark_safe
-
-from .models import Category, Post, Tag, Comment
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django import forms
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.utils.safestring import mark_safe
+
+from .models import Category, Post, Tag, Comment
 
 
 @admin.register(Category)

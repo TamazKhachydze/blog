@@ -1,4 +1,6 @@
 from django.urls import path
+from django.contrib.auth.views import LogoutView
+
 from .views import (
     PostListView,
     DetailView,
@@ -11,7 +13,7 @@ from .views import (
     create_comment,
     create_child_comment
 )
-from django.contrib.auth.views import LogoutView
+
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post_list'),

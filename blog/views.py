@@ -4,15 +4,16 @@ from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import render, redirect
 from django import views
-from .models import Post, Tag, Category, Comment
-from .forms import LoginForm, RegistrationForm, CommentForm
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
-from .utils import get_path_for_filter_pagination, get_data_for_filter, create_comment_tree, get_data_comment
 import json
 from django.db.models import F
 from django.contrib import messages
 from django.core.cache import cache
+
+from .models import Post, Tag, Category, Comment
+from .forms import LoginForm, RegistrationForm, CommentForm
+from .utils import get_path_for_filter_pagination, get_data_for_filter, create_comment_tree, get_data_comment
 
 
 class CategoryTag:
@@ -101,11 +102,8 @@ class LoginView(views.View):
         return render(request, 'blog/login.html', context)
 
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         form = LoginForm(request.POST or None)
-        print('111')
         if form.is_valid():
-            print('222')
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(username=username, password=password)
@@ -128,10 +126,8 @@ class RegistrationView(views.View):
         return render(request, 'blog/registration.html', context)
 
     def post(self, request, *args, **kwargs):
-        print('98765432')
         form = RegistrationForm(request.POST or None)
         if form.is_valid():
-            print('123456789')
             new_user = form.save(commit=False)
             new_user.username = form.cleaned_data['username']
             new_user.email = form.cleaned_data['email']
@@ -226,6 +222,9 @@ def create_child_comment(request):
     Comment.objects.create(
         user=user, text=text, content_type=content_type, object_id=object_id, parent=parent, is_child=is_child
     )
-    comments_ = Post.objects.get(id=object_id).comments.all()
-    comments_list = create_comment_tree(comments_)
+    # comments_ = Post.objects.get(id=object_id).comments.all()
+    # comments_list = create_comment_tree(comments_)
+    qs = Comment.objects.select_related('user').filter(object_id=request.POST.get('postId'))
+    data_comment = get_data_comment(qs)
+    comments_list = create_comment_tree(**data_comment)
     return render(request, 'blog/single.html', {'comments': comments_list})
